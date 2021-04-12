@@ -1,7 +1,7 @@
 const $arenas = document.querySelector('.arenas');
 const $randomButton = document.querySelector('.button');
 
-const scorpion = {
+const player1 = {
   player: 1,
   name: 'Scorpion',
   hp: 100,
@@ -10,9 +10,12 @@ const scorpion = {
   attack: function () {
     console.log(this.name + ' Fight...');
   },
+  changeHP,
+  elHP,
+  renderHP,
 };
 
-const subzero = {
+const player2 = {
   player: 2,
   name: 'Sub-Zero',
   hp: 100,
@@ -21,6 +24,9 @@ const subzero = {
   attack: function () {
     console.log(this.name + ' Fight...');
   },
+  changeHP,
+  elHP,
+  renderHP,
 };
 
 function createElement(tag, className) {
@@ -53,49 +59,58 @@ function createPlayer(character) {
   return $player;
 }
 
-function changeHP(player) {
-  const $playerLife = document.querySelector(
-    '.player' + player.player + ' .life'
-  );
-  player.hp -= randomDmg(20);
+function changeHP(count) {
+  this.hp -= count;
 
-  if (player.hp < 0) {
-    $arenas.appendChild(defineWin(scorpion, subzero));
-    player.hp = 0;
-    $randomButton.disabled = true;
+  if (this.hp < 0) {
+    this.hp = 0;
   }
 
-  $playerLife.style.width = player.hp + '%';
+  this.renderHP();
+}
+
+function elHP() {
+  return document.querySelector('.player' + this.player + ' .life');
+}
+
+function renderHP() {
+  const $playerLife = this.elHP();
+  return ($playerLife.style.width = this.hp + '%');
 }
 
 function randomDmg(limiter) {
   return Math.ceil(Math.random() * limiter);
 }
 
-// function playerLose(name) {
-//   const $loseTitle = createElement('div', 'loseTitle');
-//   $loseTitle.innerText = name + ' lose';
+function playerWins(name) {
+  const $loseTitle = createElement('div', 'loseTitle');
 
-//   return $loseTitle;
-// }
-
-function defineWin(player1, player2) {
-  const $winTitle = createElement('div', 'winTitle');
-
-  if (player1.hp > player2.hp) {
-    $winTitle.innerText = player1.name + ' WINS';
+  if (name) {
+    $loseTitle.innerText = name + ' WINS';
   } else {
-    $winTitle.innerText = player2.name + ' WINS';
+    $loseTitle.innerText = 'draw';
   }
 
-  return $winTitle;
+  return $loseTitle;
 }
 
 $randomButton.addEventListener('click', function () {
   console.log('###: Click random Button!');
-  changeHP(subzero);
-  changeHP(scorpion);
+  player1.changeHP(randomDmg(20));
+  player2.changeHP(randomDmg(20));
+
+  if (player1.hp === 0 || player2.hp === 0) {
+    $randomButton.disabled = true;
+  }
+
+  if (player1.hp === 0 && player1.hp < player2.hp) {
+    $arenas.appendChild(playerWins(player2.name));
+  } else if (player2.hp === 0 && player2.hp < player1.hp) {
+    $arenas.appendChild(playerWins(player1.name));
+  } else if (player1.hp === 0 && player2.hp === 0) {
+    $arenas.appendChild(playerWins());
+  }
 });
 
-$arenas.appendChild(createPlayer(scorpion));
-$arenas.appendChild(createPlayer(subzero));
+$arenas.appendChild(createPlayer(player1));
+$arenas.appendChild(createPlayer(player2));

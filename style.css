@@ -262,6 +262,10 @@ body {
   top: 1px;
 }
 
+.button[disabled] {
+  background-color: rgb(196, 160, 0);
+}
+
 .loseTitle {
   position: absolute;
   top: 25%;
