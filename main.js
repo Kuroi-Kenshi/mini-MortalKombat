@@ -1,5 +1,15 @@
 const $arenas = document.querySelector('.arenas');
-const $randomButton = document.querySelector('.button');
+// const $randomButton = document.querySelector('.control .button');
+const $formFight = document.querySelector('.control');
+const $fightButton = document.querySelector('.buttonWrap .button');
+
+const HIT = {
+  head: 30,
+  body: 25,
+  foot: 20,
+};
+
+const ATTACK = ['head', 'body', 'foot'];
 
 const player1 = {
   player: 1,
@@ -78,8 +88,21 @@ function renderHP() {
   return ($playerLife.style.width = this.hp + '%');
 }
 
-function randomDmg(limiter) {
+function getRandom(limiter) {
   return Math.ceil(Math.random() * limiter);
+}
+
+function createReloadButton() {
+  const $reloadButtonDiv = createElement('div', 'reloadWrap');
+  const $reloadButton = createElement('button', 'button');
+
+  $reloadButton.addEventListener('click', function () {
+    window.location.reload();
+  });
+
+  $reloadButton.innerText = 'Restart';
+  $arenas.appendChild($reloadButtonDiv);
+  $reloadButtonDiv.appendChild($reloadButton);
 }
 
 function playerWins(name) {
@@ -94,13 +117,81 @@ function playerWins(name) {
   return $loseTitle;
 }
 
-$randomButton.addEventListener('click', function () {
-  console.log('###: Click random Button!');
-  player1.changeHP(randomDmg(20));
-  player2.changeHP(randomDmg(20));
+// $randomButton.addEventListener('click', function () {
+//   console.log('###: Click random Button!');
+//   player1.changeHP(getRandom(20));
+//   player2.changeHP(getRandom(20));
+
+//   if (player1.hp === 0 || player2.hp === 0) {
+//     $randomButton.disabled = true;
+//     createReloadButton();
+//   }
+
+//   if (player1.hp === 0 && player1.hp < player2.hp) {
+//     $arenas.appendChild(playerWins(player2.name));
+//   } else if (player2.hp === 0 && player2.hp < player1.hp) {
+//     $arenas.appendChild(playerWins(player1.name));
+//   } else if (player1.hp === 0 && player2.hp === 0) {
+//     $arenas.appendChild(playerWins());
+//   }
+// });
+
+$arenas.appendChild(createPlayer(player1));
+$arenas.appendChild(createPlayer(player2));
+
+function enemyAttack() {
+  const hit = ATTACK[getRandom(3) - 1];
+  const defence = ATTACK[getRandom(3) - 1];
+
+  return {
+    value: getRandom(HIT[hit]),
+    hit,
+    defence,
+  };
+}
+
+$formFight.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const enemy = enemyAttack();
+
+  const attack = {};
+
+  for (let item of $formFight) {
+    if (item.checked && item.name === 'hit') {
+      attack.value = getRandom(HIT[item.value]);
+      attack.hit = item.value;
+    }
+
+    if (item.checked && item.name === 'defence') {
+      attack.defence = item.value;
+    }
+
+    item.checked = false;
+  }
+
+  console.log('attack: ', attack);
+  console.log('enemy attack: ', enemy);
+
+  if (attack.hit !== enemy.defence && enemy.hit !== attack.defence) {
+    player1.changeHP(enemy.value);
+    player2.changeHP(attack.value);
+  } else if (enemy.hit !== attack.defence) {
+    player1.changeHP(enemy.value);
+  } else if (attack.hit !== enemy.defence) {
+    player2.changeHP(attack.value);
+  } else if (enemy.hit === attack.defence || attack.hit === enemy.defence) {
+    console.log('Оба игрока блокировали атаку друг друга!!!');
+  }
 
   if (player1.hp === 0 || player2.hp === 0) {
-    $randomButton.disabled = true;
+    $fightButton.disabled = true;
+    for (let item of $formFight) {
+      if (!item.classList.contains('button')) {
+        item.disabled = true;
+      }
+    }
+    createReloadButton();
   }
 
   if (player1.hp === 0 && player1.hp < player2.hp) {
@@ -112,5 +203,9 @@ $randomButton.addEventListener('click', function () {
   }
 });
 
-$arenas.appendChild(createPlayer(player1));
-$arenas.appendChild(createPlayer(player2));
+// for (let item of $formFight) {
+//   if (!item.classList.contains('button')) {
+//     console.log(item);
+
+//   }
+// }
